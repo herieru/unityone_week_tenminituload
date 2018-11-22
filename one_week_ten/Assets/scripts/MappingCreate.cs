@@ -19,10 +19,50 @@
 
 using UnityEngine;
 using System.Collections;
+using UniRx;
 
 public class MappingCreate
 {
-	//最大の1辺範囲
-	private readonly int MAX_WIDTH_BLOCK;
+	/// <summary>
+    /// 最大の 1 辺範囲
+    /// </summary>
+	private readonly int MAX_WIDTH_BLOCK  = 10;
 
+    /// <summary>
+    /// マップのマネージャ
+    /// </summary>
+    private MapManager map_manager;
+
+
+    /// <summary>
+    /// ゴールまでの距離
+    /// </summary>
+    private int goal_length;
+
+    /// <summary>
+    /// 派生するラインの数
+    /// </summary>
+    private int line_count;
+
+    /// <summary>
+    /// ゴールまでの曲がる回数
+    /// </summary>
+    private int turn_count_to_goal;
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <param name="_manager"></param>
+    public MappingCreate(MapManager _manager)
+    {
+        map_manager = _manager;
+    }
+
+    /// <summary>
+    /// マップを生成する
+    /// </summary>
+    private void create_map()
+    {
+
+    }
 }

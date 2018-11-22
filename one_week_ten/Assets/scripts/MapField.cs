@@ -16,19 +16,24 @@
 using UnityEngine;
 using System.Collections;
 
-public class MapField
+public class MapField:MonoBehaviour
 {
-
 
 
 	/// <summary>
 	/// 
 	/// </summary>
+    /// <param name="_root">ルートとなる基準になるGameObject</param>
 	/// <param name="_mapping_map">作成するマップ情報</param>
 	/// <param name="_width">横に配置されるブロック数</param>
 	/// <param name="_height">縦に配置されるブロック数</param>
-	public MapField(bool[] _mapping_map , int _width,int _height)
+	public void CreateSettingMapFieldInfo(GameObject _root,bool[] _mapping_map , int _width,int _height)
 	{
 
 	}
+
+    public void Setting_MapFieldInfo(bool[] _mapping_map, int _width, int _height)
+    {
+
+    }
 }
