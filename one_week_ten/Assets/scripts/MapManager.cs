@@ -49,6 +49,7 @@ public class MapManager : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
+        complete_create_subject = new Subject<MapField>();
         complete_create_subject.Subscribe(_t => create_completed(_t));
         map_creater = new MappingCreate(this);
         map_fields = new List<MapField>();

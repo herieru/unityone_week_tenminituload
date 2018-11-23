@@ -18,30 +18,61 @@ using System.Collections;
 
 public class MapBlock
 {
+    /// <summary>
+    /// 横軸の位置
+    /// </summary>
+    private int x_pos;
+
+    /// <summary>
+    /// 縦軸の位置
+    /// </summary>
+    private int y_pos;
+
+    /// <summary>
+    /// このブロックが存在するかどうかの
+    /// </summary>
+    private bool isExistBlock;
+
 	/// <summary>
 	/// 表示を行うかどうかのもの
 	/// </summary>
 	private bool is_display;
 
+
+    /// <summary>
+    /// このブロックの位置
+    /// </summary>
+    public Vector2 PosInt
+    {
+        get
+        {
+            return new Vector2(x_pos, y_pos);
+        }
+    }
+
+    /// <summary>
+    /// このブロックが存在するか？
+    /// </summary>
+    public bool ExistBlock
+    {
+        get
+        {
+            return isExistBlock;
+        }
+    }
+    
+
+    /// <summary>
+    /// このマップブロックのゲームオブジェクト
+    /// </summary>
 	private GameObject created_prefab;
 
-	//一時的なコンストラクタ
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="_display"></param>
-	/// <param name="_prefab"></param>
-	/// <param name="_setting_pos"></param>
-	public MapBlock(bool _display,GameObject _prefab,Vector3 _setting_pos)
-	{
-		if(_display)
-		{
-			created_prefab = GameObject.Instantiate(_prefab);
-			created_prefab.transform.position = _setting_pos;
-		}
-
-
-	}
+	public MapBlock(GameObject _block_object,int _x_pos,int _y_pos)
+    {
+        isExistBlock = true;
+        x_pos = _x_pos;
+        y_pos = _y_pos;
+    }
 
 
 	/// <summary>
