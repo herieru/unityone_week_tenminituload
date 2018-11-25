@@ -61,24 +61,24 @@ public class MappingCreate
     public MappingCreate(MapManager _manager)
     {
         map_manager = _manager;
-        goal_length = 7;　　　//値は適当
+        goal_length = MAX_WIDTH_BLOCK;　　　//値は適当
         line_count = 1;         //値は適当
         turn_count_to_goal = 1;//値は適当
 
-        create_new_map();
+        CreateNewMap();
     }
 
     /// <summary>
-    /// マップを生成する
+    /// マップを生成する GameObjectから作成を行う。
     /// </summary>
-    private void create_new_map()
+    public void CreateNewMap()
     {
         GameObject _map_field_object = new GameObject("MappingField");
         MapField _map_field = _map_field_object.AddComponent<MapField>();
         _map_field.CreateSettingMapFieldInfo(MAX_WIDTH_BLOCK, MAX_WIDTH_BLOCK);
-
-
+        create_map_info(_map_field);
         finish_map();
+        
     }
 
 
@@ -86,7 +86,7 @@ public class MappingCreate
     /// 具体的なマップを作成する。
     /// </summary>
     /// <param name="_map_field"></param>
-    private void create_map_info(MapField _map_field)
+    public void create_map_info(MapField _map_field)
     {
         int _goal_length = goal_length;
         int _turn_count_to_goal = turn_count_to_goal;
@@ -98,8 +98,10 @@ public class MappingCreate
         }
         else
         {
-
+            free_compile_map(_map_field);
         }
+
+        map_manager.CompleteObserver.OnNext(_map_field);
     }
 
     /// <summary>
@@ -108,24 +110,111 @@ public class MappingCreate
     /// <param name="_map_field"></param>
     private void first_compile_map(MapField _map_field)
     {
-       //構造体で、判断を行う機構が必要
+        //構造体で、判断を行う機構が必要
+        var _goal_point = create_goal_pos();
+        int _goal_pos = _goal_point.Item2;
+        int _width = _goal_point.Item1;
+        bool[,] _map_logic = new bool[MAX_WIDTH_BLOCK, MAX_WIDTH_BLOCK];
+        //直線で卸す
+        ///for(int _i = _goal_pos;_i >= 0; _i--)
+        for(int _i = 0;_i <= _goal_pos;_i++)
+        {
+            _map_logic[_width, _i] = true;
+        }
 
+        var _start_pos = create_start_pos(_goal_point);
+
+        _map_field.Setting_MapFieldInfo(_map_logic, MAX_WIDTH_BLOCK, MAX_WIDTH_BLOCK);
+        _map_field.SetStartPos(_start_pos.Item1, _start_pos.Item2);
+        _map_field.SetGoalPos(_goal_point.Item1, _goal_point.Item2);
     }
 
     /// <summary>
     /// 自由に勝手にマップを作成する。
     /// </summary>
-    /// <param name="mapField"></param>
-    /// <param name="_goal_length"></param>
-    /// <param name="_turn_count"></param>
-    /// <param name="_line_count"></param>
-    private void free_compile_map(MapField mapField,int _goal_length,int _turn_count,int _line_count)
+    /// <param name="_map_field"></param>
+    private void free_compile_map(MapField _map_field)
     {
+        //構造体で、判断を行う機構が必要
+        var _goal_point = create_goal_pos();
+        int _goal_pos = _goal_point.Item2;
+        int _width = _goal_point.Item1;
+        bool[,] _map_logic = new bool[MAX_WIDTH_BLOCK, MAX_WIDTH_BLOCK];
+
+        var _start_pos = create_random_start_pos(_goal_pos);
+        _map_logic = create_aisle(_start_pos, _goal_point);
+
+        _map_field.Setting_MapFieldInfo(_map_logic, MAX_WIDTH_BLOCK, MAX_WIDTH_BLOCK);
+        _map_field.SetStartPos(_start_pos.Item1, _start_pos.Item2);
+        _map_field.SetGoalPos(_goal_point.Item1, _goal_point.Item2);
+        finish_map();
+    }
+
+    /// <summary>
+    /// ターン回数によってスタートの位置をずらす
+    /// </summary>
+    /// <returns></returns>
+    private Tuple<int,int>create_random_start_pos(int _goal_pos)
+    {
+        bool _success = false;
+        int _start_pos = 0;
+
+        while(true)
+        {
+            _start_pos = Random.Range(0, MAX_WIDTH_BLOCK - 1);
+            if(_start_pos != _goal_pos)
+            {
+                _success = true;
+            }
 
 
+            if(_success)
+            {
+                break;
+            }
+        }
+
+        return new Tuple<int, int>(_start_pos, 0);
+    }
+
+    /// <summary>
+    /// スタートとゴールを結んだうえで、ちょっとした寄り道を作成する。
+    /// </summary>
+    /// <param name="_start_pos"></param>
+    /// <param name="_goal_pos"></param>
+    /// <returns></returns>
+    private bool[,]create_aisle(Tuple<int,int>_start_pos,Tuple<int,int>_goal_pos)
+    {
+        bool[,] _map_detaile = new bool[MAX_WIDTH_BLOCK,MAX_WIDTH_BLOCK];
+        ///スタートと、ゴールの部分のベクトルとしての計算結果
+        Tuple<int, int> _start_to_goal_vec = new Tuple<int, int>(_goal_pos.Item1 - _start_pos.Item1, _goal_pos.Item2 - _start_pos.Item2);
+
+        int _move = _start_to_goal_vec.Item1 < 0?-1:1;
+
+        Debug.LogFormat("aaa:{0}", Mathf.Abs(_start_to_goal_vec.Item1));
+        //横軸に入れる
+        for(int _x = 0;_x <= Mathf.Abs(_start_to_goal_vec.Item1);_x++)
+        {
+            int _x_pos = _start_pos.Item1 + _x * _move;
+            Debug.LogFormat("横軸で変わった箇所：x:{0}  y:{1}", _x_pos, _start_pos.Item2);
+
+            _map_detaile[_x_pos, _start_pos.Item2] = true;
+        }
+
+        _move = _start_to_goal_vec.Item2 < 0 ? -1 : 1;
+
+        //縦軸に入れる
+        for(int _y = 0;_y <= Mathf.Abs(_start_to_goal_vec.Item2);_y++)
+        {
+            int _y_pos = _start_pos.Item2 + _y * _move;
+            Debug.LogFormat("縦軸で変わった箇所：x:{0}  y:{1}", _goal_pos.Item1, _y_pos);
+            _map_detaile[_goal_pos.Item1, _y_pos] = true;
+        }
+        return _map_detaile;
     }
 
 
+ 
     /// <summary>
     /// マップを一つ生成し終わる度に呼び出される。
     /// それぞれのレベルが上がっていく
@@ -137,14 +226,36 @@ public class MappingCreate
         line_count += 1;
     }
 
-
-
-
-
-    public Tuple<int, int> create_goal_pos()
+    public void Reset()
     {
-        return new Tuple<int, int>(Random.Range(0, MAX_WIDTH_BLOCK - 1), 0);
+        goal_length = MAX_WIDTH_BLOCK;　　　//値は適当
+        line_count = 1;         //値は適当
+        turn_count_to_goal = 1;//値は適当
     }
+
+
+
+
+    /// <summary>
+    /// ゴールの設定の場所を返す。　必ずこれは奥になる
+    /// </summary>
+    /// <returns></returns>
+    private Tuple<int, int> create_goal_pos()
+    {
+        return new Tuple<int, int>(Random.Range(0, MAX_WIDTH_BLOCK - 1), MAX_WIDTH_BLOCK - 1);
+    }
+
+
+    /// <summary>
+    /// スタートの位置を決める 基準として、ゴールから垂直に降ろされたところに対して落ちていく。
+    /// </summary>
+    /// <param name="_goal_pos"></param>
+    /// <returns></returns>
+    private Tuple<int,int> create_start_pos(Tuple<int,int> _goal_pos)
+    {
+        return new Tuple<int, int>(_goal_pos.Item1, 0);
+    }
+
 
 
 
@@ -184,10 +295,22 @@ public class MappingCreate
 
     public enum BlockType
     {
-        None,   //そもそもいけない
-        Normal, //普通のブロック
-        Start,  //スタートブロック
-        Goal,   //ゴールブロック
+        /// <summary>
+        /// 移動先でない
+        /// </summary>
+        None,   
+        /// <summary>
+        /// 普通の移動できるブロック
+        /// </summary>
+        Normal, 
+        /// <summary>
+        /// スタートに当たるブロック
+        /// </summary>
+        Start,  
+        /// <summary>
+        /// ゴールに当たるブロック
+        /// </summary>
+        Goal,
 
     }
 
